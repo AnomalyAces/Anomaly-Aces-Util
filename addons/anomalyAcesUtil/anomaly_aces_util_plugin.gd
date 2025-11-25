@@ -7,10 +7,12 @@ func _enter_tree():
 
 	#Add Autoloads
 	add_autoload_singleton("AceArrayUtil", "res://addons/anomalyAcesUtil/Scripts/AceArrayUtil/AceArrayUtil.gd")
-	add_autoload_singleton("SerializeUtil", "res://addons/anomalyAcesUtil/Scripts/Serialize/SerializeUtil.gd")
+	add_autoload_singleton("AceSerialize", "res://addons/anomalyAcesUtil/Scripts/AceSerialize/AceSerialize.gd")
+	add_autoload_singleton("AceStringUtil", "res://addons/anomalyAcesUtil/Scripts/AceStringUtil/AceStringUtil.gd")
 	pass
 
 
 func _exit_tree():
 	remove_autoload_singleton("AceArrayUtil")
-	remove_autoload_singleton("SerializeUtil")
+	remove_autoload_singleton("AceSerialize")
+	remove_autoload_singleton("AceStringUtil")

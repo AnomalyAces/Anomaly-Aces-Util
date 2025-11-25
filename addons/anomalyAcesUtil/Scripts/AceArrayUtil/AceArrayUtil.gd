@@ -8,6 +8,7 @@ func findFirst( arr:Array, search_criteria: Callable) -> Variant:
 			return item
 	return null
 
+## Add Unique item to Array - Create a Set
 func addUnique(arr: Array, item: Variant) -> bool:
 	if not arr.has(item):
 		arr.push_back(item)

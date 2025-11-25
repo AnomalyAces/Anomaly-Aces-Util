@@ -25,14 +25,14 @@ func prepare() -> void:
 		if not ProjectSettings.has_setting(setting_name):
 			AceLog.printLog(["setting %s is not present" % setting_name])
 			ProjectSettings.set_setting(setting_name, setting_config.value)
-			ProjectSettings.set_setting(setting_name, setting_config.value)
-			ProjectSettings.add_property_info({
-				"name" = setting_name,
-				"type" = setting_config.type,
-				"hint" = setting_config.hint,
-				"hint_string" = setting_config.hint_string
-			})
-			ProjectSettings.set_as_basic(setting_name, true)
+		ProjectSettings.add_property_info({
+			"name" = setting_name,
+			"type" = setting_config.type,
+			"hint" = setting_config.hint,
+			"hint_string" = setting_config.hint_string
+		})
+		ProjectSettings.set_as_basic(setting_name, true)
+		ProjectSettings.set_initial_value(setting_name, setting_config.value)
 		# ProjectSettings.set_as_internal(setting_name, setting_config.has("is_hidden"))
 
 

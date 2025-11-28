@@ -2,7 +2,7 @@ class_name TypedInfo extends Object
 	
 var is_built_in: bool
 var array_script: Script #non-built in typed arrays
-var dict_obj_script: Script #non-built in typed arrays
+var dict_obj_script: Script #non-built in typed dictionaries
 var built_in_type: int = -1
 var children_processed: bool = false
 

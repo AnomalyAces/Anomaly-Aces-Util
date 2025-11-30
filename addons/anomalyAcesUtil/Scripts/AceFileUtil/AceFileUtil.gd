@@ -22,7 +22,7 @@ class Zip:
 			var _zip_file_index:int = files[0].find(ADDON_PARENT_DIR)
 			zip_file_path = files[0].substr(0, _zip_file_index + ADDON_PARENT_DIR.length())
 
-			AceLog.printLog(["Zip File Path: %s" % zip_file_path])
+			AceLog.printLog(["Zip File Path: %s" % zip_file_path], AceLog.LOG_LEVEL.DEBUG)
 
 			#Remove everything including and before the addons/ folder in the subfolder path
 			var subFileList: Array = files.map(func(file) -> String:
@@ -38,7 +38,7 @@ class Zip:
 			AceLog.printLog(["The subfolder %s does not contain the required addons/ parent folder. Ignoring subfolder." % subfolder], AceLog.LOG_LEVEL.WARN)
 
 		
-		AceLog.printLog(["Extracting files from zip: %s" % zip_file, files ])
+		AceLog.printLog(["Extracting files from zip: %s" % zip_file, files ], AceLog.LOG_LEVEL.DEBUG)
 		for file_path in files:
 			if file_path.ends_with("/"):
 				# It's a directory

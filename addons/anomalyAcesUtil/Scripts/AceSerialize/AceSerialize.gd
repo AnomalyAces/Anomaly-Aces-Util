@@ -8,6 +8,13 @@ const CLASS_RESOURCE: String = "CLASS_RESOURCE"
 var json: JSON = JSON.new()
 
 
+func serialize_array(array: Array[Variant]) -> String:
+	var obj_array: Array[Object] = _convert_custom_obj_arr_to_base_obj_arr(array)
+	var string_arr: Array[String] = []
+	for obj in obj_array:
+		string_arr.append(serialize(obj))
+	
+	return "["+",".join(string_arr)+"]"
 
 func serialize(obj: Object) -> String:
 	var dict: Dictionary = {}
@@ -26,12 +33,22 @@ func serialize(obj: Object) -> String:
 			#Don't serialize empty properties
 			if(pval == null || (typeof(pval) == TYPE_STRING && pval == "" )):
 				continue
-			var value = (
-				JSON.parse_string(serialize(pval)) if (typeof(pval) == TYPE_OBJECT && !pval is Texture2D)
-				else var_to_str(pval) if ![TYPE_STRING,TYPE_INT,TYPE_FLOAT].has(typeof(pval))
-				else pval
-			)
-			dict[prop] = value
+			if typeof(pval) == TYPE_ARRAY:
+				dict[prop] = []
+				if pval.size() == 0:
+					continue
+				else:
+					var obj_arr: Array[Object] = _convert_custom_obj_arr_to_base_obj_arr(pval)
+					for val in obj_arr:
+						dict[prop].append(JSON.parse_string(serialize(val)))
+						# dict[prop].append(val)
+			else:
+				var value = (
+					JSON.parse_string(serialize(pval)) if (typeof(pval) == TYPE_OBJECT && !pval is Texture2D)
+					else var_to_str(pval) if ![TYPE_STRING,TYPE_INT,TYPE_FLOAT].has(typeof(pval))
+					else pval
+				)
+				dict[prop] = value
 		return JSON.stringify(dict, "\t",false)
 	else:
 		return var_to_str(obj) if ![TYPE_STRING,TYPE_INT,TYPE_FLOAT].has(typeof(obj)) else str(obj)
@@ -277,3 +294,8 @@ func _recursively_find(typed_members_dict: Dictionary[String, TypedInfo], obj: O
 		elif typeof(value) == TYPE_OBJECT and not value is Array and not value is Dictionary:
 			_recursively_find(typed_members_dict, value, full_path)
 	pass
+
+func _convert_custom_obj_arr_to_base_obj_arr(customObjArr: Array[Variant]) -> Array[Object]:
+	var obj_array: Array[Object]
+	obj_array.assign(customObjArr)
+	return obj_array

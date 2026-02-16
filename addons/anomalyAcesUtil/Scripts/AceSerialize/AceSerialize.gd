@@ -9,11 +9,15 @@ var json: JSON = JSON.new()
 
 
 func serialize_array(array: Array[Variant]) -> String:
-	var obj_array: Array[Object] = _convert_custom_obj_arr_to_base_obj_arr(array)
 	var string_arr: Array[String] = []
-	for obj in obj_array:
-		string_arr.append(serialize(obj))
-	
+	if _is_typed_object_array(array):
+		var obj_array: Array[Object] = _convert_custom_obj_arr_to_base_obj_arr(array)
+		for obj in obj_array:
+			string_arr.append(serialize(obj))
+	elif _is_typed_dictionary_array(array):
+		for dict in array:
+			string_arr.append(JSON.stringify(dict, "\t",false))
+		
 	return "["+",".join(string_arr)+"]"
 
 func serialize(obj: Object) -> String:
@@ -294,6 +298,20 @@ func _recursively_find(typed_members_dict: Dictionary[String, TypedInfo], obj: O
 		elif typeof(value) == TYPE_OBJECT and not value is Array and not value is Dictionary:
 			_recursively_find(typed_members_dict, value, full_path)
 	pass
+
+func _is_typed_dictionary_array(array: Array) -> bool:
+	if array.get_typed_builtin() == TYPE_DICTIONARY: # TYPE_DICTIONARY is a constant
+		return true
+	return false
+
+func _is_typed_object_array(array: Array) -> bool:
+	var classname = array.get_typed_class_name()
+	# Check if a class name is set and it is not an empty string
+	if classname != &"": # &"" is an empty StringName
+		# You can also check against a specific class name if needed
+		# e.g., if class_name == &"MyCustomObject":
+		return true
+	return false
 
 func _convert_custom_obj_arr_to_base_obj_arr(customObjArr: Array[Variant]) -> Array[Object]:
 	var obj_array: Array[Object]

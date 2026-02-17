@@ -1,10 +1,9 @@
 @tool
 extends Node
 
+const ADDON_PARENT_DIR :String = "addons/"
 
 class Zip:
-	const ADDON_PARENT_DIR :String = "addons/"
-
 	static func extract_all_from_zip(zip_file: String, dest_dir: String, subfolder: String="") -> void:
 		var reader: ZIPReader = ZIPReader.new()
 		reader.open(zip_file)
@@ -59,3 +58,21 @@ class Zip:
 		var res = reader.read_file(file)
 		reader.close()
 		return res
+
+class Config:
+	static func load_config(path: String) -> ConfigFile:
+		var config = ConfigFile.new()
+		var err = config.load(path)
+		if err != OK:
+			AceLog.printLog(["Failed to load config file at path: %s. Error code: %d" % [path, err]], AceLog.LOG_LEVEL.ERROR)
+			return null
+		
+		return config
+	
+	static func save_config(config: ConfigFile, path: String) -> bool:
+		var err = config.save(path)
+		if err != OK:
+			AceLog.printLog(["Failed to save config file at path: %s. Error code: %d" % [path, err]], AceLog.LOG_LEVEL.ERROR)
+			return false
+		
+		return true

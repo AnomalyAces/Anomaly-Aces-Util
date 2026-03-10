@@ -48,6 +48,10 @@ class Zip:
 			var file = FileAccess.open(root_dir.get_current_dir().path_join(file_path), FileAccess.WRITE)
 			var buffer = reader.read_file(zip_file_path + file_path)
 			file.store_buffer(buffer)
+		
+		#Delete Zip File after extraction
+		AceLog.printLog(["Deleting zip file: %s" % zip_file], AceLog.LOG_LEVEL.DEBUG)
+		DirAccess.remove_absolute(zip_file)
 	
 
 	static func read_zip_file(zip_file: String, file: String) -> PackedByteArray:
@@ -76,3 +80,62 @@ class Config:
 			return false
 		
 		return true
+
+class File:
+	static func file_exists(path: String) -> bool:
+		return FileAccess.file_exists(path)
+	
+	static func create_file(path: String) -> FileAccess:
+		var file = FileAccess.open(path, FileAccess.WRITE)
+		return file
+	
+	static func move_folder(editor_interface: EditorInterface, from_dir: String, to_dir: String):
+		AceLog.printLog(["Moving files from %s to %s" % [from_dir, to_dir]], AceLog.LOG_LEVEL.DEBUG)
+		# Ensure source exists
+		if not DirAccess.dir_exists_absolute(from_dir):
+			printerr("Source directory does not exist: ", from_dir)
+			return
+
+		# Create destination if it doesn't exist
+		if not DirAccess.dir_exists_absolute(to_dir):
+			DirAccess.make_dir_recursive_absolute(to_dir)
+
+		# 1. Copy files and subfolders
+		var dir = DirAccess.open(from_dir)
+		if dir:
+			dir.list_dir_begin()
+			var file_name = dir.get_next()
+			while file_name != "":
+				if file_name != "." and file_name != "..":
+					var old_path = from_dir.path_join(file_name)
+					var new_path = to_dir.path_join(file_name)
+					
+					if dir.current_is_dir():
+						# Recursive call for subdirectories
+						move_folder(editor_interface,old_path, new_path)
+					else:
+						# DirAccess.copy_absolute automatically overwrites existing files
+						DirAccess.copy_absolute(old_path, new_path)
+				file_name = dir.get_next()
+				
+		# 2. Cleanup: Remove the original source folder once contents are moved
+		# _remove_recursive(from_dir)
+
+		# 3. scan for changes
+		# if editor_interface != null:
+		# 	editor_interface.get_resource_filesystem().scan()
+
+	static func _remove_recursive(path: String):
+		var dir = DirAccess.open(path)
+		if dir:
+			dir.list_dir_begin()
+			var file_name = dir.get_next()
+			while file_name != "":
+				if file_name != "." and file_name != "..":
+					var full_path = path.path_join(file_name)
+					if dir.current_is_dir():
+						_remove_recursive(full_path)
+					else:
+						DirAccess.remove_absolute(full_path)
+				file_name = dir.get_next()
+			DirAccess.remove_absolute(path)

@@ -130,6 +130,7 @@ class File:
 			editor_interface.get_resource_filesystem().scan()
 
 	static func _should_ignore_file(file_name: String, ignore_file_ext: Array[String]) -> bool:
+		AceLog.printLog(["Checking if file should be ignored: %s" % file_name], AceLog.LOG_LEVEL.DEBUG)
 		for ignore in ignore_file_ext:
 			if file_name.ends_with(ignore):
 				AceLog.printLog(["Ignoring file: %s due to matching ignore extension: %s" % [file_name, ignore]], AceLog.LOG_LEVEL.DEBUG)

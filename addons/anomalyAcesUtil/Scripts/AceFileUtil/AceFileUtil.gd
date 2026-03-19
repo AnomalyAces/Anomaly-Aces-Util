@@ -93,7 +93,7 @@ class File:
 		var file = FileAccess.open(path, FileAccess.WRITE)
 		return file
 	
-	static func move_folder(editor_interface: EditorInterface, from_dir: String, to_dir: String):
+	static func move_folder(editor_interface: EditorInterface, from_dir: String, to_dir: String, ignore_files: Array[String]=[]):
 		AceLog.printLog(["Moving files from %s to %s" % [from_dir, to_dir]], AceLog.LOG_LEVEL.DEBUG)
 		# Ensure source exists
 		if not DirAccess.dir_exists_absolute(from_dir):

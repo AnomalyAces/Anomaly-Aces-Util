@@ -131,6 +131,50 @@ class File:
 		if editor_interface != null:
 			editor_interface.get_resource_filesystem().scan()
 
+	static func delete_matching_items(target_dir: String, substring: String):
+		var dir = DirAccess.open(target_dir)
+		if not dir:
+			AceLog.printLog(["Critical Error: Could not open root directory: %s" % target_dir], AceLog.LOG_LEVEL.ERROR)
+			return
+
+		# 1. Handle matching files
+		for file_name in dir.get_files():
+			if substring in file_name:
+				var err = dir.remove(file_name)
+				if err != OK:
+					AceLog.printLog(["Failed to delete file: %s in directory: %s. Error code: %d" % [file_name, target_dir, err]], AceLog.LOG_LEVEL.ERROR)
+
+		# 2. Handle subdirectories
+		for dir_name in dir.get_directories():
+			var full_path = target_dir.path_join(dir_name)
+			
+			if substring in dir_name:
+				# If the folder name matches, wipe it entirely
+				_delete_recursive(full_path)
+			else:
+				# If not, look inside it for matches
+				delete_matching_items(full_path, substring)
+
+	static func _delete_recursive(path: String):
+		var dir = DirAccess.open(path)
+		if dir:
+			# Empty the files first
+			for file in dir.get_files():
+				var err = dir.remove(file)
+				if err != OK:
+					AceLog.printLog(["Error deleting file '", file, "' in '", path, "'. Error code: ", err], AceLog.LOG_LEVEL.ERROR)
+			
+			# Recurse into sub-folders
+			for sub_dir in dir.get_directories():
+				_delete_recursive(path.path_join(sub_dir))
+			
+		# Finally, delete the (now empty) folder
+		var err = DirAccess.remove_absolute(path)
+		if err != OK:
+			AceLog.printLog(["Failed to remove directory '", path, "'. Error code: ", err], AceLog.LOG_LEVEL.ERROR)
+		else:
+			AceLog.printLog(["Successfully deleted: ", path], AceLog.LOG_LEVEL.INFO)
+
 	static func _should_ignore_file(file_name: String, ignore_file_ext: Array[String]) -> bool:
 		AceLog.printLog(["Checking if file should be ignored: %s" % file_name], AceLog.LOG_LEVEL.DEBUG)
 		for ignore in ignore_file_ext:

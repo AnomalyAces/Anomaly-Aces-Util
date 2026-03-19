@@ -43,6 +43,10 @@ class Zip:
 				# It's a directory
 				root_dir.make_dir_recursive(file_path)
 				continue
+			if file_path.ends_with(".zip"):
+				AceLog.printLog(["Skipping zip file: %s" % file_path], AceLog.LOG_LEVEL.DEBUG)
+				continue
+			 # Ensure the directory structure exists before writing the file 
 		
 			root_dir.make_dir_recursive(root_dir.get_current_dir().path_join(file_path).get_base_dir())
 			var file = FileAccess.open(root_dir.get_current_dir().path_join(file_path), FileAccess.WRITE)

@@ -117,13 +117,15 @@ class File:
 					if dir.current_is_dir():
 						# Recursive call for subdirectories
 						move_folder(editor_interface,old_path, new_path)
+						# Cleanup: Remove the original source folder once contents are moved
+						_remove_recursive(old_path)
 					else:
 						# DirAccess.copy_absolute automatically overwrites existing files
 						DirAccess.copy_absolute(old_path, new_path)
 				file_name = dir.get_next()
 				
 		# 2. Cleanup: Remove the original source folder once contents are moved
-		_remove_recursive(from_dir)
+		# _remove_recursive(from_dir)
 
 		# 3. scan for changes
 		if editor_interface != null:

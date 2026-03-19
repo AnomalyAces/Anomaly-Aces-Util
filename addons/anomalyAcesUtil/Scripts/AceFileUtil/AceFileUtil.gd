@@ -93,7 +93,7 @@ class File:
 		var file = FileAccess.open(path, FileAccess.WRITE)
 		return file
 	
-	static func move_folder(editor_interface: EditorInterface, from_dir: String, to_dir: String, ignore_files: Array[String]=[]):
+	static func move_folder(editor_interface: EditorInterface, from_dir: String, to_dir: String, ignore_file_ext: Array[String]=[]):
 		AceLog.printLog(["Moving files from %s to %s" % [from_dir, to_dir]], AceLog.LOG_LEVEL.DEBUG)
 		# Ensure source exists
 		if not DirAccess.dir_exists_absolute(from_dir):
@@ -110,7 +110,7 @@ class File:
 			dir.list_dir_begin()
 			var file_name = dir.get_next()
 			while file_name != "":
-				if file_name != "." and file_name != "..":
+				if file_name != "." and file_name != ".." and !_should_ignore_file(file_name, ignore_file_ext):
 					var old_path = from_dir.path_join(file_name)
 					var new_path = to_dir.path_join(file_name)
 					
@@ -123,12 +123,18 @@ class File:
 				file_name = dir.get_next()
 				
 		# 2. Cleanup: Remove the original source folder once contents are moved
-		# _remove_recursive(from_dir)
+		_remove_recursive(from_dir)
 
 		# 3. scan for changes
-		# if editor_interface != null:
-		# 	editor_interface.get_resource_filesystem().scan()
+		if editor_interface != null:
+			editor_interface.get_resource_filesystem().scan()
 
+	static func _should_ignore_file(file_name: String, ignore_file_ext: Array[String]) -> bool:
+		for ignore in ignore_file_ext:
+			if file_name.ends_with(ignore):
+				AceLog.printLog(["Ignoring file: %s due to matching ignore extension: %s" % [file_name, ignore]], AceLog.LOG_LEVEL.DEBUG)
+				return true
+		return false
 	static func _remove_recursive(path: String):
 		var dir = DirAccess.open(path)
 		if dir:

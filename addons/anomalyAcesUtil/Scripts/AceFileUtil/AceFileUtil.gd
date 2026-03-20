@@ -132,6 +132,7 @@ class File:
 			editor_interface.get_resource_filesystem().scan()
 
 	static func delete_matching_items(target_dir: String, substring: String):
+		AceLog.printLog(["Deleting files matching '%s' in directory: %s" % [substring, target_dir]], AceLog.LOG_LEVEL.DEBUG)
 		var dir = DirAccess.open(target_dir)
 		if not dir:
 			AceLog.printLog(["Critical Error: Could not open root directory: %s" % target_dir], AceLog.LOG_LEVEL.ERROR)

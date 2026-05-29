@@ -294,6 +294,16 @@ class DateTime:
 	## Return the current system timezone name.[br]
 	static func _system_timezone_name() -> String:
 		return str(Time.get_time_zone_from_system().get("name", "Local"))
+	
+
+	## Convert System Timezone Name to 3 letter abbreviation (e.g., "Eastern Standard Time" -> "EST").[br]
+	static func _timezone_name_to_abbreviation(tz_name: String) -> String:
+		return AceArrayUtil.findFirst(
+			AceDateTimeUtilConstants.TIMEZONE_DATA,
+			func(item):
+				return item["value"].to_lower() == tz_name.to_lower()
+		)["abbr"]
+
 
 	## Parse a datetime string into a datetime dictionary.[br]
 	## Supports multiple common datetime formats, including textual months and optional time.[br]
@@ -364,6 +374,7 @@ class DateTime:
 	## [b]assume_utc[/b] - Interpret input as UTC when true.[br]
 	static func utc_string_to_local_datetime_string(utc_datetime_string: String, assume_utc: bool = true) -> String:
 		var datetime_dict = DateTime.parse_datetime_string(utc_datetime_string, assume_utc)
+		AceLog.printLog(["Parsed datetime dict for UTC to local conversion:", str(datetime_dict)], AceLog.LOG_LEVEL.DEBUG)
 		if datetime_dict.is_empty():
 			return ""
 
@@ -400,7 +411,7 @@ class DateTime:
 		var hour = int(datetime_dict.get("hour", 0))
 		var minute = int(datetime_dict.get("minute", 0))
 		var second = int(datetime_dict.get("second", 0))
-		var tz = DateTime._system_timezone_name()
+		var tz = _timezone_name_to_abbreviation(DateTime._system_timezone_name())
 
 		var hour_24 = hour
 		var hour_12 = hour % 12
@@ -457,9 +468,8 @@ class DateTime:
 			return ""
 
 		var datetime_dict = DateTime.parse_datetime_string(local_string, false)
+		AceLog.printLog(["Parsed datetime dict for UTC to local conversion (utc_string_to_local_formatted_string):", str(datetime_dict)], AceLog.LOG_LEVEL.DEBUG)
 		if datetime_dict.is_empty():
 			return ""
 
 		return DateTime.format_datetime_string(local_string, format, false)
-
-

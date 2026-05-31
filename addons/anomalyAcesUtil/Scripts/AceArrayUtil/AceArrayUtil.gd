@@ -1,7 +1,7 @@
 @tool
 extends Node
 
-## Find First Element of Array that meets the criteria
+## Find First Element of Array that meets the criteria[br]
 func findFirst( arr:Array, search_criteria: Callable) -> Variant: 
 	for item in arr:
 		if search_criteria.call(item):

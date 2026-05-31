@@ -89,8 +89,8 @@ class File:
 	static func file_exists(path: String) -> bool:
 		return FileAccess.file_exists(path)
 	
-	static func create_file(path: String) -> FileAccess:
-		var file = FileAccess.open(path, FileAccess.WRITE)
+	static func create_file(path: String, accessMode: FileAccess.ModeFlags = FileAccess.READ) -> FileAccess:
+		var file = FileAccess.open(path, accessMode)
 		return file
 	
 	static func move_folder(editor_interface: EditorInterface, from_dir: String, to_dir: String, ignore_file_ext: Array[String]=[]):

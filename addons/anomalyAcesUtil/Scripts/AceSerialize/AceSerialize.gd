@@ -1,14 +1,14 @@
 @tool
-extends Node
+class_name AceSerialize extends Node
 
 const CLASS_RESOURCE: String = "CLASS_RESOURCE"
 
 
 
-var json: JSON = JSON.new()
+static var json: JSON = JSON.new()
 
 
-func serialize_array(array: Array[Variant]) -> String:
+static func serialize_array(array: Array[Variant]) -> String:
 	var string_arr: Array[String] = []
 	if _is_typed_object_array(array):
 		var obj_array: Array[Object] = _convert_custom_obj_arr_to_base_obj_arr(array)
@@ -20,7 +20,7 @@ func serialize_array(array: Array[Variant]) -> String:
 		
 	return "["+",".join(string_arr)+"]"
 
-func serialize(obj: Object) -> String:
+static func serialize(obj: Object) -> String:
 	var dict: Dictionary = {}
 
 	if obj.get_script() != null:
@@ -57,7 +57,7 @@ func serialize(obj: Object) -> String:
 	else:
 		return var_to_str(obj) if ![TYPE_STRING,TYPE_INT,TYPE_FLOAT].has(typeof(obj)) else str(obj)
 	
-func deserialize(jsonInput:String, cls:Resource) -> AceDeserializeResult:
+static func deserialize(jsonInput:String, cls:Resource) -> AceDeserializeResult:
 	AceLog.printLog(["Deserializing...", jsonInput], AceLog.LOG_LEVEL.DEBUG)
 	var json_res: Error = json.parse(jsonInput)
 	if json_res == Error.OK:
@@ -83,14 +83,14 @@ func deserialize(jsonInput:String, cls:Resource) -> AceDeserializeResult:
 		return res
 
 	
-func _prop_list_to_string_list(cls_properties: Array[Dictionary]):
+static func _prop_list_to_string_list(cls_properties: Array[Dictionary]):
 	var properties: Array[String] 
 	properties.assign(cls_properties.map(
 		func(prop) -> String: return prop.name 
 	))
 	return properties
 
-func _deserialize_array(jsonInput:Array, cls:Resource) -> AceDeserializeResult:
+static func _deserialize_array(jsonInput:Array, cls:Resource) -> AceDeserializeResult:
 	var arrayDeserRes: AceDeserializeResult = AceDeserializeResult.new()
 	var array: Array = []
 	for jsonObj in jsonInput:
@@ -111,7 +111,7 @@ func _deserialize_array(jsonInput:Array, cls:Resource) -> AceDeserializeResult:
 	arrayDeserRes.error = Error.OK
 	return arrayDeserRes
 
-func _deserialize_obj(jsonInput:Dictionary, cls:Resource) -> AceDeserializeResult:
+static func _deserialize_obj(jsonInput:Dictionary, cls:Resource) -> AceDeserializeResult:
 	var res:AceDeserializeResult = AceDeserializeResult.new()
 	
 	var obj:Object = cls.new()
@@ -199,11 +199,11 @@ func _deserialize_obj(jsonInput:Dictionary, cls:Resource) -> AceDeserializeResul
 	return res
 
 
-func _determine_obj_typed_members(obj: Object, typed_members_dict: Dictionary[String, TypedInfo]):
+static func _determine_obj_typed_members(obj: Object, typed_members_dict: Dictionary[String, TypedInfo]):
 	var current_path = ""
 	_recursively_find(typed_members_dict, obj, current_path)
 
-func _recursively_find(typed_members_dict: Dictionary[String, TypedInfo], obj: Object, current_path: String):
+static func _recursively_find(typed_members_dict: Dictionary[String, TypedInfo], obj: Object, current_path: String):
 	# Exit the recursion if the object is null or not a valid object.
 	if not is_instance_valid(obj):
 		return
@@ -299,12 +299,12 @@ func _recursively_find(typed_members_dict: Dictionary[String, TypedInfo], obj: O
 			_recursively_find(typed_members_dict, value, full_path)
 	pass
 
-func _is_typed_dictionary_array(array: Array) -> bool:
+static func _is_typed_dictionary_array(array: Array) -> bool:
 	if array.get_typed_builtin() == TYPE_DICTIONARY: # TYPE_DICTIONARY is a constant
 		return true
 	return false
 
-func _is_typed_object_array(array: Array) -> bool:
+static func _is_typed_object_array(array: Array) -> bool:
 	var classname = array.get_typed_class_name()
 	# Check if a class name is set and it is not an empty string
 	if classname != &"": # &"" is an empty StringName
@@ -313,7 +313,7 @@ func _is_typed_object_array(array: Array) -> bool:
 		return true
 	return false
 
-func _convert_custom_obj_arr_to_base_obj_arr(customObjArr: Array[Variant]) -> Array[Object]:
+static func _convert_custom_obj_arr_to_base_obj_arr(customObjArr: Array[Variant]) -> Array[Object]:
 	var obj_array: Array[Object]
 	obj_array.assign(customObjArr)
 	return obj_array

@@ -1,5 +1,5 @@
 @tool
-extends Node
+class_name AceFileUtil extends Node
 
 const ADDON_PARENT_DIR :String = "addons/"
 

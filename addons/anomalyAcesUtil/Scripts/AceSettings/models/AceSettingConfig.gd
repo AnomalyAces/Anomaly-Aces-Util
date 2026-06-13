@@ -1,3 +1,4 @@
+@tool
 class_name AceSettingConfig extends Object
 
 var name: String

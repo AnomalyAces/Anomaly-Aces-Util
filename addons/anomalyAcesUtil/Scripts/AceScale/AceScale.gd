@@ -91,7 +91,7 @@ static func apply_editor_scaling(
 	skip_marked: bool = true, 
 	custom_sizing: Dictionary = {}
 ) -> void:
-	if scale == 1.0 or node == null:
+	if node == null:
 		return
 		
 	# Validate custom sizing dictionary only once at the root level of traversal

@@ -28,14 +28,14 @@ When defining rules inside the dictionary, use the following keys:
 | `font_size` | `int` | Overrides the base font size to a specific value before scaling. |
 | `flat` | `bool` | Sets the `flat` property of a `Button` to `true` / `false`. |
 | `size_flags_vertical` | `int` | Overrides the `size_flags_vertical` flag (e.g. `Control.SIZE_SHRINK_CENTER`). |
-| `is_table` | `bool` | Explicitly marks the node as a table to enable theme scaling. |
+| `skip_scaling` | `bool` | Bypasses scaling for this node (and its children) when `skip_marked` parameter is enabled on traversal. |
 | `theme_properties` | `Array[String]` | Lists custom `Theme` resource property names on the node to duplicate and scale. |
 
 ### Selector Matching Types
 Selectors can target nodes in three ways:
-1.  **Class Selectors**: Keys matching Godot class names (e.g., `"Button"`, `"LineEdit"`).
+1.  **Class Selectors**: Keys matching Godot class names or registered script class names (e.g., `"Button"`, `"AceTablePlugin"`).
 2.  **Name Selectors**: Keys matching exact node names (e.g., `"AddonCountLabel"`).
-3.  **Relative Path Selectors**: Keys matching `"Parent/Child"` node hierarchies (e.g., `"Header/Button"`).
+3.  **Relative Path Selectors**: Keys matching `"Parent/Child"` node hierarchies (e.g., `"Header/Button"`). Checks if the specified parent exists anywhere in the node's ancestor chain.
 
 ---
 
@@ -67,18 +67,18 @@ func _apply_scaling() -> void:
 Define a custom rule dictionary to tweak layout elements (e.g., header elements):
 ```gdscript
 const MY_CUSTOM_RULES := {
-	"Button": {
+	"Header/Button": {
 		"flat": true,
 		"height_offset": 8,
 		"width_offset": 8,
 		"font_size": 16
 	},
-	"SearchBox": {
+	"Header/SearchBox": {
 		"size_flags_vertical": Control.SIZE_SHRINK_CENTER,
 		"font_size": 16
 	},
 	"AceTablePlugin": {
-		"is_table": true,
+		"skip_scaling": true,
 		"theme_properties": ["header_theme", "row_theme"]
 	}
 }

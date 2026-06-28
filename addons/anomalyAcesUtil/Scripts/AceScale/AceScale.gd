@@ -15,7 +15,7 @@ const CONSTANT_OVERRIDE_KEYS := [
 const VALID_RULE_KEYS := [
 	"height_offset", "width_offset", "square_width_offset", 
 	"flat", "font_size", "size_flags_vertical",
-	"is_table", "theme_properties"
+	"skip_scaling", "theme_properties"
 ]
 
 const DEFAULT_REFERENCE_WIDTH := 1920.0
@@ -83,12 +83,12 @@ static func scale_svg_icon(svg: Texture2D, target_size: int) -> Texture2D:
 ## - [code]font_size[/code] (int): Sets a custom base font size to scale from.
 ## - [code]flat[/code] (bool): Sets flat styling on Button nodes.
 ## - [code]size_flags_vertical[/code] (int): Sets size_flags_vertical override.
-## - [code]is_table[/code] (bool): Explicitly marks node as a table plugin to scale custom themes.
+## - [code]skip_scaling[/code] (bool): Bypasses scaling for this node (and its children) when [code]skip_marked[/code] is enabled.
 ## - [code]theme_properties[/code] (Array[String]): Lists custom Theme properties to scale.
 static func apply_editor_scaling(
 	node: Node, 
 	scale: float, 
-	skip_tables: bool = true, 
+	skip_marked: bool = true, 
 	custom_sizing: Dictionary = {}
 ) -> void:
 	if scale == 1.0 or node == null:
@@ -101,8 +101,8 @@ static func apply_editor_scaling(
 	# Resolve matching rule configuration for this node
 	var sizing = _get_custom_sizing_for_node(node, custom_sizing)
 	
-	var is_table = sizing.get("is_table", false)
-	if skip_tables and is_table:
+	# Skip if bypass is requested and node is marked for skipping
+	if skip_marked and sizing.get("skip_scaling", false) == true:
 		return
 		
 	if node is Control:
@@ -211,13 +211,14 @@ static func apply_editor_scaling(
 			if orig != null:
 				node.theme = _scale_theme(orig, scale)
 				
-		# Scale table themes if the node is marked as table
-		if is_table:
-			var theme_properties = sizing.get("theme_properties", ["header_theme", "header_cell_theme", "row_theme", "row_cell_theme"])
-			scale_table_themes(node, scale, theme_properties)
+		# Scale theme properties configured via rules
+		if sizing.has("theme_properties"):
+			var theme_properties = sizing["theme_properties"]
+			if theme_properties is Array:
+				scale_custom_themes(node, scale, theme_properties)
 			
 	for child in node.get_children():
-		apply_editor_scaling(child, scale, skip_tables, custom_sizing)
+		apply_editor_scaling(child, scale, skip_marked, custom_sizing)
 
 ## Resolves the matching rule dictionary from custom sizing configuration.
 ## Evaluates direct name matching, parent/child path matching, and class matching.
@@ -229,15 +230,19 @@ static func _get_custom_sizing_for_node(node: Control, custom_sizing: Dictionary
 	if custom_sizing.has(node.name):
 		return custom_sizing[node.name]
 		
-	# 2. Relative parent/child name match (e.g. "Header/Button")
+	# 2. Relative ancestor/child path match (e.g. "Header/Button")
 	for selector in custom_sizing:
 		if "/" in selector:
 			var parts = selector.split("/")
 			if parts.size() == 2:
 				var parent_name = parts[0]
 				var child_name = parts[1]
-				if (node.name == child_name or node.get_class() == child_name) and node.get_parent() != null and node.get_parent().name == parent_name:
-					return custom_sizing[selector]
+				if node.name == child_name or node.get_class() == child_name:
+					var p = node.get_parent()
+					while p != null:
+						if p.name == parent_name:
+							return custom_sizing[selector]
+						p = p.get_parent()
 					
 	# 3. Node class name match (checks class name or registered global script class name)
 	var class_name_str = node.get_class()
@@ -261,26 +266,30 @@ static func _validate_custom_sizing(custom_sizing: Dictionary) -> void:
 				if not rule_key in VALID_RULE_KEYS:
 					push_warning("AceScale: Unsupported scaling rule property '%s' for selector '%s'. Valid options: %s" % [rule_key, selector, str(VALID_RULE_KEYS)])
 
-## Scales custom themes (such as those on AceTablePlugin).
-static func scale_table_themes(table_plugin: Control, scale: float, theme_keys: Array = ["header_theme", "header_cell_theme", "row_theme", "row_cell_theme"]) -> void:
-	if scale == 1.0 or table_plugin == null:
+## Scales custom themes configured on a control.
+static func scale_custom_themes(control: Control, scale: float, theme_keys: Array) -> void:
+	if scale == 1.0 or control == null:
 		return
 		
 	for key in theme_keys:
 		var meta_key = "original_" + key
 		var orig = null
-		if table_plugin.has_meta(meta_key):
-			orig = table_plugin.get_meta(meta_key)
+		if control.has_meta(meta_key):
+			orig = control.get_meta(meta_key)
 		if orig == null:
-			orig = table_plugin.get(key)
+			orig = control.get(key)
 			if orig != null:
-				table_plugin.set_meta(meta_key, orig)
+				control.set_meta(meta_key, orig)
 		else:
-			table_plugin.set(key, orig)
+			control.set(key, orig)
 			
-		var current = table_plugin.get(key)
+		var current = control.get(key)
 		if current != null and current is Theme:
-			table_plugin.set(key, _scale_theme(current, scale))
+			control.set(key, _scale_theme(current, scale))
+
+## Deprecated: Use scale_custom_themes instead. For backwards compatibility.
+static func scale_table_themes(table_plugin: Control, scale: float, theme_keys: Array = ["header_theme", "header_cell_theme", "row_theme", "row_cell_theme"]) -> void:
+	scale_custom_themes(table_plugin, scale, theme_keys)
 
 ## Deeply duplicates and scales the font sizes and constants of a Theme resource.
 static func _scale_theme(theme: Theme, scale: float) -> Theme:
